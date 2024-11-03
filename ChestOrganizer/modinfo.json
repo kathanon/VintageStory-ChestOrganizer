@@ -1,0 +1,14 @@
+{
+  "type": "code",
+  "modid": "chestorganizer",
+  "name": "Chest Organizer",
+  "authors": [
+    "Kathanon"
+  ],
+  "description": "Adds the ability to have several containers open in a single window. Also adds sorting and search to container windows.",
+  "version": "1.0.0",
+  "side": "Client",
+  "dependencies": {
+    "game": "1.19.*"
+  }
+}

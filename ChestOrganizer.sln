@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.10.35122.118
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChestOrganizer", "ChestOrganizer\ChestOrganizer.csproj", "{C5EACF03-7A1C-4E8D-A7B9-4B5DCF7DE041}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CakeBuild", "ZZCakeBuild\CakeBuild.csproj", "{C1F9BB3A-7DAF-462E-A518-0FCEA40F79CD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		PerfTest|Any CPU = PerfTest|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C5EACF03-7A1C-4E8D-A7B9-4B5DCF7DE041}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C5EACF03-7A1C-4E8D-A7B9-4B5DCF7DE041}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C5EACF03-7A1C-4E8D-A7B9-4B5DCF7DE041}.PerfTest|Any CPU.ActiveCfg = Release|Any CPU
+		{C5EACF03-7A1C-4E8D-A7B9-4B5DCF7DE041}.PerfTest|Any CPU.Build.0 = Release|Any CPU
+		{C5EACF03-7A1C-4E8D-A7B9-4B5DCF7DE041}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C5EACF03-7A1C-4E8D-A7B9-4B5DCF7DE041}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1F9BB3A-7DAF-462E-A518-0FCEA40F79CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1F9BB3A-7DAF-462E-A518-0FCEA40F79CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1F9BB3A-7DAF-462E-A518-0FCEA40F79CD}.PerfTest|Any CPU.ActiveCfg = Release|Any CPU
+		{C1F9BB3A-7DAF-462E-A518-0FCEA40F79CD}.PerfTest|Any CPU.Build.0 = Release|Any CPU
+		{C1F9BB3A-7DAF-462E-A518-0FCEA40F79CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1F9BB3A-7DAF-462E-A518-0FCEA40F79CD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B0CA611F-A101-4BE1-8180-A3CF6128720A}
+	EndGlobalSection
+EndGlobal
