@@ -45,23 +45,27 @@ public static class Sorter {
         if (!merge) return;
 
         // Merge stacks.
+        bool changed = false;
         for (int i = 0, j = 1; i < n - 1 && j < n; ) {
             var target = inventory[i];
             var source = inventory[j];
-            if (target.CanTakeFrom(source)) {
-                Move(source, target);
+            if (changed && target.CanTakeFrom(source)) {
+                changed = Move(source, target);
                 if (source.Empty) j++;
             } else { 
+                changed = true;
                 i++;
                 if (i >= j) j = i + 1;
             }
         }
 
-        void Move(ItemSlot from, ItemSlot to) {
+        bool Move(ItemSlot from, ItemSlot to) {
+            int pre = from.StackSize;
             int n = from.GetRemainingSlotSpace(to.Itemstack);
             ItemStackMoveOperation op = new(api.World, EnumMouseButton.Left, 0, EnumMergePriority.AutoMerge, n);
             op.ActingPlayer = player;
             SendPacket(manager.TryTransferTo(from, to, ref op));
+            return pre != from.StackSize;
         }
 
         void Flip(ItemSlot a, ItemSlot b) {
