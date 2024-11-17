@@ -9,14 +9,14 @@ namespace ChestOrganizer;
 public class BlockHighlight : IRenderer {
     private readonly ICoreClientAPI api;
     private readonly ClientMain game;
-    private readonly DrawWireframeCube wireframe;
+    private readonly WireframeCube wireframe;
     private BlockEntity entity;
     private bool registered = false;
 
     public BlockHighlight(ICoreClientAPI api) {
         this.api = api;
         game = api.World as ClientMain;
-        wireframe = new(game, -1);
+        wireframe = WireframeCube.CreateUnitCube(api, ColorUtil.WhiteArgb);
     }
 
     public BlockEntity Entity { 
@@ -61,13 +61,13 @@ public class BlockHighlight : IRenderer {
         if (!(array?.Length > 0)) return;
 
         foreach (var box in array) {
-            float xscale = 0.5f * box.XSize;
-            float yscale = 0.5f * box.YSize;
-            float zscale = 0.5f * box.ZSize;
-            double x = pos.X + box.X1 + xscale;
-            double y = pos.Y + box.Y1 + yscale;
-            double z = pos.Z + box.Z1 + zscale;
-            wireframe.Render(game, x, y, z, xscale, yscale, zscale, thickness, color);
+            float xscale = box.XSize;
+            float yscale = box.YSize;
+            float zscale = box.ZSize;
+            double x = pos.X + box.X1;
+            double y = pos.Y + box.Y1;
+            double z = pos.Z + box.Z1;
+            wireframe.Render(api, x, y, z, xscale, yscale, zscale, thickness, color);
         }
     }
 }
