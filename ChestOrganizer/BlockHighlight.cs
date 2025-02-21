@@ -47,7 +47,7 @@ public class BlockHighlight : IRenderer {
     public void Dispose() {
         entity = null;
         Unregister();
-        Traverse.Create(wireframe).Method("Dispose").GetValue();
+        wireframe.Dispose();
     }
 
     public void OnRenderFrame(float deltaTime, EnumRenderStage stage) {

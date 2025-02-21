@@ -17,7 +17,7 @@ public static class Patch_ChestDialog {
         Patch_ChestDialog.api = api;
     }
 
-    private static GuiDialogBlockEntityInventory current = null;
+    private static GuiDialog current = null;
     private static bool allowCloseInventory = true;
 
     public static bool BlockCloseInventory(Func<bool> action) {
@@ -32,6 +32,11 @@ public static class Patch_ChestDialog {
     [HarmonyPatch(typeof(GuiDialogBlockEntityInventory), MethodType.Constructor, 
         typeof(string), typeof(InventoryBase), typeof(BlockPos), typeof(int), typeof(ICoreClientAPI))]
     public static void InventoryDialog_Ctor(GuiDialogBlockEntityInventory __instance) 
+        => current = __instance;
+
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(GuiDialogInventory), "ComposeSurvivalInvDialog")]
+    public static void PlayerInventoryDialogCompose(GuiDialogInventory __instance) 
         => current = __instance;
 
     [HarmonyPostfix]

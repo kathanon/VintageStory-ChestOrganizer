@@ -91,8 +91,10 @@ public class GuiDialogMergedInventory : GuiDialogGeneric {
 
     public override double DrawOrder => 0.21;
 
-    public override void OnGuiClosed() 
-        => inventory.Close(capi.World.Player);
+    public override void OnGuiClosed() {
+        inventory.Close(capi.World.Player);
+        Dispose();
+    }
 
     public override void OnGuiOpened() 
         => inventory.Open(capi.World.Player);

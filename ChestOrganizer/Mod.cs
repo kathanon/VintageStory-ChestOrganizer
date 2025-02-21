@@ -7,11 +7,16 @@ namespace ChestOrganizer;
 public class Mod : ModSystem {
     public const string ID = "chestorganizer";
 
+    private static bool patch = true;
+
     public override void StartClientSide(ICoreClientAPI api) {
         Patch_ChestDialog.Setup(api);
         Icons.Setup(api);
 
-        new Harmony(ID).PatchAll();
+        if (patch) {
+            new Harmony(ID).PatchAll();
+            patch = false;
+        }
     }
 
 }

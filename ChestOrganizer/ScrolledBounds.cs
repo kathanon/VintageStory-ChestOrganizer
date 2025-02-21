@@ -86,7 +86,7 @@ public class ScrolledBounds {
 
     public GuiElementScrollbar Scrollbar(ICoreClientAPI api) {
         scroll = ElementStdBounds.VerticalScrollbar(inset).WithParent(Outer);
-        scrollbar = new GuiElementScrollbar(api, OnScroll, scroll);
+        scrollbar = new GuiElementLimitedScrollbar(api, OnScroll, scroll, Outer);
         return scrollbar;
     }
 
@@ -97,6 +97,24 @@ public class ScrolledBounds {
         if (useScroll) { 
             Inner.fixedY = scrollMargin - (double) value;
             Inner.CalcWorldBounds();
+        }
+    }
+
+    private class GuiElementLimitedScrollbar : GuiElementScrollbar {
+        private readonly ElementBounds limit;
+
+        public GuiElementLimitedScrollbar(ICoreClientAPI capi,
+                                          Action<float> onScroll,
+                                          ElementBounds bounds,
+                                          ElementBounds limit) 
+            : base(capi, onScroll, bounds) {
+            this.limit = limit;
+        }
+
+        public override void OnMouseWheel(ICoreClientAPI api, MouseWheelEventArgs args) {
+            if (limit.PointInside(api.Input.MouseX, api.Input.MouseY)) {
+                base.OnMouseWheel(api, args);
+            }
         }
     }
 }

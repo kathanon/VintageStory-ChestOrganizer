@@ -6,8 +6,9 @@ namespace ChestOrganizer;
 using CompareFunc = System.Func<ItemStack, ItemStack, int>;
 
 public class Comparer : IComparer<ItemStack> {
-    public static readonly Comparer NameAmount     = new(ByName, ByAmount);
-    public static readonly Comparer TypeNameAmount = new(ByType, ByName, ByAmount);
+    public static readonly Comparer Name     = new(ByName, ByAmount);
+    public static readonly Comparer Code     = new(ByCodePath, ByCodeDomain, ByAmount);
+    public static readonly Comparer TypeName = new(ByType, ByName, ByAmount);
 
     private static bool CompareNullableEnum<T>(T x, T y, out int res) {
         if (x == null) {
@@ -39,6 +40,12 @@ public class Comparer : IComparer<ItemStack> {
 
     private static int ByName(ItemStack x, ItemStack y)
         => x.GetName().CompareTo(y.GetName());
+
+    private static int ByCodePath(ItemStack x, ItemStack y)
+        => string.CompareOrdinal(x.Collectible.Code.Path, y.Collectible.Code.Path);
+
+    private static int ByCodeDomain(ItemStack x, ItemStack y)
+        => string.CompareOrdinal(x.Collectible.Code.Domain, y.Collectible.Code.Domain);
 
     private static int ByAmount(ItemStack x, ItemStack y)
         => y.StackSize.CompareTo(x.StackSize);

@@ -34,8 +34,20 @@ public class MergedInventory : InventoryBase {
         }
     }
 
-    public static bool OnServerPacket(BlockEntityOpenableContainer container, int id) 
-        => current?.HandleServerPacket(container, id) ?? false;
+    public static bool OnServerPacket(BlockEntityOpenableContainer container, int id) {
+        var api = container.Api as ICoreClientAPI;
+        bool invert = api?.ModifierDown(Modifier.Shift | Modifier.Control) ?? false;
+        if (current != null) {
+            return !invert && current.HandleServerPacket(container, id);
+        } else if (invert) {
+            current ??= new(api);
+            if (current.HandleServerPacket(container, id)) {
+                UpdateDialog(api);
+                return true;
+            }
+        }
+        return false;
+    }
 
     public MergedInventory(ICoreClientAPI api) 
         : base("mergedinventory", $"{++lastID}", api) {

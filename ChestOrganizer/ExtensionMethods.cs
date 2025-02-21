@@ -58,4 +58,28 @@ public static class ExtensionMethods {
         scrollBounds = null;
         return bounds?.EndScroll(composer) ?? composer;
     }
+
+    public static bool ModifierDown(this ICoreClientAPI self, Modifier modifiers) {
+        var keys = self.Input.KeyboardKeyStateRaw;
+        bool and = IsSet(Modifier.And);
+        if (Check(Modifier.Shift,   GlKeys.LShift,   GlKeys.RShift)  ) return !and;
+        if (Check(Modifier.Control, GlKeys.LControl, GlKeys.RControl)) return !and;
+        if (Check(Modifier.Alt,     GlKeys.LAlt,     GlKeys.RAlt)    ) return !and;
+        return and;
+
+        bool Check(Modifier m, GlKeys key1, GlKeys key2)
+            => IsSet(m) && ((keys[(int) key1] || keys[(int) key2]) == !and);
+
+        bool IsSet(Modifier m) 
+            => (modifiers & m) != 0;
+    }
+}
+
+public enum Modifier {
+    Shift   = 1,
+    Control = 2,
+    Alt     = 4,
+
+    Or      = 0,
+    And     = 8,
 }

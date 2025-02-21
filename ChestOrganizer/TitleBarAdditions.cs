@@ -2,12 +2,14 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.Util;
+using Vintagestory.Client.NoObf;
 
 namespace ChestOrganizer;
 using IconFunc = Action<Context, double, double, double, double, double[]>;
@@ -25,16 +27,20 @@ public class TitleBarAdditions {
     private InventoryBase inventory;
     private GuiDialogBlockEntityInventory dialog;
 
-    // TODO: tooltips
-
     public TitleBarAdditions(GuiElementDialogTitleBar bar) {
         this.bar = bar;
     }
 
-    public void Activate(ICoreClientAPI api, GuiDialogBlockEntityInventory dialog) {
-        this.dialog = dialog;
-        Activate(api, dialog.Inventory, dialog);
-        icons.Insert(0, new(Icons.Merge, Merge, api, Lang.Get("chestorganizer:merge")));
+    public void Activate(ICoreClientAPI api, GuiDialog dialog) {
+        if (dialog is GuiDialogBlockEntityInventory dialogInv) { 
+            this.dialog = dialogInv;
+            Activate(api, dialogInv.Inventory, dialog);
+            icons.Insert(0, new(Icons.Merge, Merge, api, Lang.Get("chestorganizer:merge")));
+        } else if (dialog is GuiDialogInventory) {
+            var backpack = api.World.Player.InventoryManager.GetOwnInventory("backpack");
+            if (backpack is not InventoryBase inventory) return;
+            Activate(api, inventory, dialog);
+        }
     }
 
     public void Activate(ICoreClientAPI api, InventoryBase inventory, GuiDialog dialog) {
@@ -49,16 +55,26 @@ public class TitleBarAdditions {
         };
     }
 
-    private void Merge() 
-        => MoveToMerged(api, dialog);
+    private void Merge() {
+        if (api.ModifierDown(Modifier.Shift)) {
+            api.OpenedGuis
+                .OfType<GuiDialogBlockEntityInventory>()
+                .ToList()
+                .Foreach(MoveToMerged);
+        } else {
+            MoveToMerged(dialog);
+        }
+    }
 
-    private void Sort() 
-        => inventory.Sort(Comparer.NameAmount, api);
+    private void Sort() {
+        var comparer = api.ModifierDown(Modifier.Shift) ? Comparer.Name : Comparer.Code;
+        inventory.Sort(comparer, api);
+    }
 
     private void Find() 
         => search.Toggle();
 
-    private static void MoveToMerged(ICoreClientAPI api, GuiDialogBlockEntityInventory dialog) {
+    private void MoveToMerged(GuiDialogBlockEntityInventory dialog) {
         if (Patch_ChestDialog.BlockCloseInventory(dialog.TryClose)) {
             MergedInventory.MergeFromDialog(dialog, api);
         }
@@ -206,11 +222,14 @@ public class TitleBarAdditions {
             for (int i = dummyDict.Count; i < inventory.Count; i++) {
                 dummyDict[i] = null;
             }
-            var grid = dialog.SingleComposer.GetSlotGrid("slotgrid");
+
+            var composer = dialog.SingleComposer ?? dialog.Composers["maininventory"];
+            var grid = composer.GetElement("slotgrid") as GuiElementItemSlotGridBase;
             if (text != null && text.Length > 0) {
-                grid.FilterItemsBySearchText(text ?? "", searchCacheNames: dummyDict);
+                grid?.FilterItemsBySearchText(text ?? "", searchCacheNames: dummyDict);
             } else {
-                grid.DetermineAvailableSlots();
+                (grid as GuiElementItemSlotGrid)?.DetermineAvailableSlots();
+                (grid as GuiElementItemSlotGridExcl)?.ComposeElements(null, null);
             }
             (grid as GuiElementHighlightItemSlotGrid)?.ComposeOutlines();
         }

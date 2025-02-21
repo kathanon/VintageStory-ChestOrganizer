@@ -22,7 +22,7 @@ public class GuiElementHighlightItemSlotGrid : GuiElementItemSlotGrid {
                                            int cols,
                                            ElementBounds bounds,
                                            int[] boundaries) 
-        : base(capi, inventory, SendPacketHandler, cols, null, bounds) {
+            : base(capi, inventory, SendPacketHandler, cols, null, bounds) {
         this.boundaries = boundaries;
         textures = boundaries.Select(_ => new LoadedTexture(capi)).ToArray();
 
@@ -69,11 +69,11 @@ public class GuiElementHighlightItemSlotGrid : GuiElementItemSlotGrid {
         start = start2;
         end = end2;
 
-        int n = slotBounds.Length;
+        int n = SlotBounds.Length;
         if (start < 0 || end < 0 || start >= n || end >= n) return;
-        var startBounds  = slotBounds[start];
-        var endBounds    = slotBounds[end];
-        var rowEndBounds = slotBounds[(end < cols) ? end : cols - 1];
+        var startBounds  = SlotBounds[start];
+        var endBounds    = SlotBounds[end];
+        var rowEndBounds = SlotBounds[(end < cols) ? end : cols - 1];
         double x1 = scaled(startBounds.fixedX - 1.0) + Margin;
         double y1 = scaled(startBounds.fixedY - 1.0) + Margin;
         double x2 = scaled(endBounds.fixedX + endBounds.fixedWidth + 1.0) + Margin;

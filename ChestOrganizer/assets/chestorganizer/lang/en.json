@@ -2,7 +2,7 @@
   "title" : "Merged",
   "close" : "Close",
   "detach": "Detach",
-  "sort"  : "Sort",
+  "sort"  : "Sort\n<i>Hold shift to sort by name.</i>",
   "find"  : "Find",
-  "merge" : "Merge"
+  "merge" : "Merge\n<i>Hold shift to merge all open containers.</i>"
 }
