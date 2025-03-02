@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Vintagestory.API.Client;
+using Vintagestory.API.Common;
 
 namespace ChestOrganizer;
 
@@ -13,6 +14,8 @@ public class GuiDialogMergedInventory : GuiDialogGeneric {
         Compose();
     }
 
+    public InventoryBase Inventory => inventory;
+
     public override void OnFinalizeFrame(float dt) {
         base.OnFinalizeFrame(dt);
 
@@ -20,7 +23,7 @@ public class GuiDialogMergedInventory : GuiDialogGeneric {
         var player = capi.World.Player;
         float range = player.WorldData.PickingRange + 1;
         float rangesq = range * range;
-        var eyePos = player.Entity.Pos.XYZ.Add(player.Entity.LocalEyePos);
+        var eyePos = player.Entity.Pos.XYZ.Add(player.Entity.LocalEyePos - 0.5f);
         var toRemove = inventory.ChestPositions
             .Where(p => p.DistanceSqTo(eyePos.X, eyePos.Y, eyePos.Z) > rangesq)
             .Select((p, i) => i)
@@ -71,7 +74,7 @@ public class GuiDialogMergedInventory : GuiDialogGeneric {
         var blocklist = new GuiElementBlockList(capi, blockBounds.Inner, inventory);
         blocklist.OnBlockHover += slotGrid.SetHighlight;
 
-        TitleBarAdditions.For(titleBar).Activate(capi, inventory, this);
+        TitleBarAdditions.For(titleBar).Activate(capi, this);
 
         composer
             .AddShadedDialogBG(ElementBounds.Fill)

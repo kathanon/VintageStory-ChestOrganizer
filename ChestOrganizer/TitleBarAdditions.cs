@@ -43,6 +43,11 @@ public class TitleBarAdditions {
         }
     }
 
+    public void Activate(ICoreClientAPI api, GuiDialogMergedInventory dialog) {
+        Activate(api, dialog.Inventory, dialog);
+        icons.Add(new(Icons.Split, DetachAll, api, Lang.Get("chestorganizer:detachall")));
+    }
+
     public void Activate(ICoreClientAPI api, InventoryBase inventory, GuiDialog dialog) {
         this.api = api;
         this.inventory = inventory;
@@ -65,6 +70,9 @@ public class TitleBarAdditions {
             MoveToMerged(dialog);
         }
     }
+
+    private void DetachAll() 
+        => (inventory as MergedInventory)?.Split();
 
     private void Sort() {
         var comparer = api.ModifierDown(Modifier.Shift) ? Comparer.Name : Comparer.Code;

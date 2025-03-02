@@ -6,7 +6,7 @@
     "Kathanon"
   ],
   "description": "Adds the ability to have several containers open in a single window. Also adds sorting and search to container windows.",
-  "version": "1.1.0",
+  "version": "1.2.2",
   "side": "Client",
   "dependencies": {
     "game": "1.20.3"

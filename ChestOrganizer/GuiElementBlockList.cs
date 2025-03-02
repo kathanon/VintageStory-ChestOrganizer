@@ -25,7 +25,7 @@ public class GuiElementBlockList : GuiElement {
             Icon    = new(capi);
             Hover   = new(capi);
             Tooltip = new(capi, tooltip);
-            api = capi;
+            api     = capi;
         }
 
         public void EnsureTooltipRendered(float deltaTime) {
@@ -83,8 +83,7 @@ public class GuiElementBlockList : GuiElement {
     public event Action<int> OnBlockHover;
 
     public GuiElementBlockList(ICoreClientAPI capi, ElementBounds bounds, MergedInventory inventory) : base(capi, bounds) {
-        blocks = inventory.ChestPositions
-            .Select(capi.World.BlockAccessor.GetBlockEntity)
+        blocks = inventory.ChestEntities
             .Select(MakeStack)
             .ToList();
         close     = new(capi, Lang.Get("chestorganizer:close"));
@@ -110,7 +109,7 @@ public class GuiElementBlockList : GuiElement {
         int iconSize = (int) Math.Round(size / 8 + 4);
         double pad = scaled(2);
 
-        close.Rect = new(size        - iconSize - pad, pad, iconSize, iconSize);
+        close.Rect = new(size         - iconSize - pad, pad, iconSize, iconSize);
         Icons.MakeTexture(ref close.Icon,  Icons.Draw,      Icons.Cross, iconSize, false);
         Icons.MakeTexture(ref close.Hover, Icons.DrawHover, Icons.Cross, iconSize, false);
 

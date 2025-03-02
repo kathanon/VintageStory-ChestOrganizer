@@ -1,0 +1,10 @@
+{
+  "title"     : "Ihopslagna",
+  "close"     : "Stäng",
+  "detach"    : "Separera",
+  "sort"      : "Sortera\n<i>Håll nere shift för att sortera efter namn.</i>",
+  "find"      : "Sök",
+  "merge"     : "Slå ihop\n<i>Håll nere shift för att slå ihop alla öppna behållare.</i>",
+  "detachall" : "Separera alla",
+  "openall"   : "Öppna alla behållare inom räckvidd"
+}

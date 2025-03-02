@@ -11,6 +11,8 @@ using Vintagestory.GameContent;
 namespace ChestOrganizer;
 public class MergedInventory : InventoryBase {
     private static int lastID = 0;
+    private static long lastPacketTime = 0L;
+    private static int lastPacketId = 0;
 
     private static MergedInventory current = null;
     private static GuiDialogMergedInventory dialog = null;
@@ -22,7 +24,11 @@ public class MergedInventory : InventoryBase {
     public static void MergeFromDialog(GuiDialogBlockEntityInventory source, ICoreClientAPI api) {
         current ??= new(api);
         current.AddFromDialog(source);
-        UpdateDialog(api);
+    }
+
+    public static void MergeRange(IEnumerable<BlockEntityOpenableContainer> containers, ICoreClientAPI api) {
+        current ??= new(api);
+        current.AddRange(containers);
     }
 
     private static void UpdateDialog(ICoreClientAPI api) {
@@ -56,11 +62,25 @@ public class MergedInventory : InventoryBase {
         this.api = api;
     }
 
-    public void AddFromDialog(GuiDialogBlockEntityInventory source) 
-        => AddPart(new(this, source, api, count), false);
+    public void AddFromDialog(GuiDialogBlockEntityInventory source) {
+        AddPart(new(this, source, api, count), false);
+        UpdateDialog(api);
+    }
 
-    public void Add(BlockEntityOpenableContainer container) 
-        => AddPart(new(this, container, api, count), true);
+    public void Add(BlockEntityOpenableContainer container) {
+        AddPart(new(this, container, api, count), true);
+        UpdateDialog(api);
+    }
+
+    public void AddRange(IEnumerable<BlockEntityOpenableContainer> containers) {
+        int n = count;
+        foreach (var container in containers) {
+            AddPart(new(this, container, api, count), true);
+        }
+        if (count != n) { 
+            UpdateDialog(api);
+        }
+    }
 
     private void AddPart(IncludedInventory part, bool open) {
         if (Find(part.Inventory) >= 0) return;
@@ -69,41 +89,62 @@ public class MergedInventory : InventoryBase {
         count += part.Count;
 
         if (open) part.Open();
-        UpdateDialog(api);
     }
 
     public void Remove(int index, bool reopen) {
         var removed = parts[index];
         parts.RemoveAt(index);
+        UpdateParts();
+        if (reopen) {
+            removed.ReopenDialog();
+        } else {
+            removed.Close();
+        }
+    }
+
+    private void Remove(IncludedInventory removed) {
+        parts.Remove(removed);
+        UpdateParts();
+        removed.Detach();
+    }
+
+    private void UpdateParts() {
         if (parts.Count == 0) {
             dialog?.TryClose();
             api.World.Player.InventoryManager.CloseInventory(this);
-        } else { 
+        } else {
             UpdateCount();
             dialog?.Compose();
-        }
-        if (reopen) {
-            removed.ReopenDialog();
-        } else { 
-            removed.Close(); 
         }
     }
 
     private bool HandleServerPacket(BlockEntityOpenableContainer container, int id) {
+        long time = api.InWorldEllapsedMilliseconds;
+        if (time - lastPacketTime < 10L && id == lastPacketId) return true;
+        lastPacketTime = time;
+        lastPacketId   = id;
+
         if (id == (int) EnumBlockContainerPacketId.OpenInventory) {
             id = (int) (container.Inventory.HasOpened(api.World.Player) 
                 ? EnumBlockEntityPacketId.Close
                 : EnumBlockEntityPacketId.Open);
         }
+
+        bool result;
         switch (id) {
             case (int) EnumBlockEntityPacketId.Open:
                 Add(container);
-                return true;
+                result = true;
+                break;
             case (int) EnumBlockEntityPacketId.Close:
-                return CloseIfPresent(container.Inventory);
+                result = CloseIfPresent(container.Inventory);
+                break;
             default:
-                return false;
+                result = false;
+                break;
         }
+        if (!result) lastPacketTime = 0L;
+        return result;
     }
 
     private bool CloseIfPresent(InventoryBase inventory) {
@@ -173,6 +214,12 @@ public class MergedInventory : InventoryBase {
     public IEnumerable<BlockPos> ChestPositions
         => parts.Select(x => x.Position);
 
+    public IEnumerable<BlockEntity> ChestEntities
+        => parts.Select(x => x.Entity);
+
+    public int ChestCount 
+        => parts.Count;
+
     public int[] Boundaries 
         => parts.Select(x => x.Start).ToArray();
 
@@ -202,6 +249,12 @@ public class MergedInventory : InventoryBase {
         Find(ref slotId)?.Inventory.MarkSlotDirty(slotId);
     }
 
+    public void Split() {
+        parts.ForEach(x => x.ReopenDialog());
+        parts.Clear();
+        UpdateParts();
+    }
+
     public override object Close(IPlayer player) {
         current = null;
         dialog = null;
@@ -214,6 +267,17 @@ public class MergedInventory : InventoryBase {
     public override void FromTreeAttributes(ITreeAttribute tree) {}
     public override void ToTreeAttributes(ITreeAttribute tree) {}
 
+    private static void SetEntityDialog(BlockEntity entity, GuiDialogBlockEntity dialog) {
+        if (entity is BlockEntityOpenableContainer container) {
+            Traverse.Create(container).Field<GuiDialogBlockEntity>("invDialog").Value = dialog;
+        }
+    }
+
+    private static void SendPacket(ICoreClientAPI api, BlockPos pos, bool open) {
+        int id = (int) (open ? EnumBlockEntityPacketId.Open : EnumBlockEntityPacketId.Close);
+        api.Network.SendBlockEntityPacket(pos, id);
+    }
+
 
     private class IncludedInventory {
         private readonly MergedInventory parent;
@@ -224,7 +288,7 @@ public class MergedInventory : InventoryBase {
         private readonly int cols;
 
         public readonly InventoryBase Inventory;
-        public readonly BlockPos Position;
+        public readonly BlockEntity Entity;
         public int Start;
         public int Count;
 
@@ -234,17 +298,15 @@ public class MergedInventory : InventoryBase {
                                  int start) {
             this.parent = parent;
             this.api = api;
+            Entity = source;
             Inventory = source.Inventory;
-            Position = source.Pos;
             closeSound = source.FindCloseSound();
             openSound = source.FindOpenSound();
             Start = start;
             Count = Inventory.Count;
             title = source.GetDialogTitle();
             cols = source.FindColumns();
-
-            Inventory.SlotModified += SlotModified;
-            Inventory.SlotNotified += SlotNotified;
+            Attach();
         }
 
         public IncludedInventory(MergedInventory parent,
@@ -254,17 +316,34 @@ public class MergedInventory : InventoryBase {
             this.parent = parent;
             this.api = api;
             Inventory = source.Inventory;
-            Position = source.BlockEntityPosition;
+            Entity = api.World.BlockAccessor.GetBlockEntity(source.BlockEntityPosition);
             closeSound = source.CloseSound;
             Start = start;
             Count = Inventory.Count;
             title = source.DialogTitle;
-            cols = api.World.BlockAccessor.GetBlockEntity(Position).FindColumns();
+            cols = Entity.FindColumns();
+            Attach();
         }
 
 
+        private void Attach() {
+            Inventory.SlotModified += SlotModified;
+            Inventory.SlotNotified += SlotNotified;
+            Inventory.OnInventoryClosed += InventoryClosed;
+        }
+
+        public void Detach() {
+            Inventory.SlotModified -= SlotModified;
+            Inventory.SlotNotified -= SlotNotified;
+            Inventory.OnInventoryClosed -= InventoryClosed;
+            api.World.Player.InventoryManager.CloseInventory(Inventory);
+        }
+
         public int End 
             => Start + Count;
+
+        public BlockPos Position
+            => Entity.Pos;
 
         public int GetSlotId(ItemSlot slot) {
             int i = Inventory.GetSlotId(slot);
@@ -272,21 +351,20 @@ public class MergedInventory : InventoryBase {
         }
 
         public void Open() {
-            api.World.Player.InventoryManager.OpenInventory(Inventory);
+            var player = api.World.Player;
+            if (!Inventory.HasOpened(player)) {
+                player.InventoryManager.OpenInventory(Inventory);
+                SendPacket(api, Position, open: true);
+            }
             api.Gui.PlaySound(openSound, randomizePitch: true);
         }
 
         public void Close() {
             Detach();
+            // We need to do this again for lid to close... why??
             api.World.Player.InventoryManager.CloseInventory(Inventory);
             SendPacket(api, Position, open: false);
             api.Gui.PlaySound(closeSound, randomizePitch: true);
-        }
-
-        private void Detach() {
-            Inventory.SlotModified -= SlotModified;
-            Inventory.SlotNotified -= SlotNotified;
-            api.World.Player.InventoryManager.CloseInventory(Inventory);
         }
 
         public int UpdateCount(int start) {
@@ -296,10 +374,9 @@ public class MergedInventory : InventoryBase {
         }
 
         public void ReopenDialog() {
-            if (title == null) return;
             Detach();
             var dialog = new GuiDialogBlockEntityInventory(title, Inventory, Position, cols, api);
-            SetEntityDialog(api, Position, dialog);
+            SetEntityDialog(Entity, dialog);
             dialog.CloseSound = closeSound;
             dialog.TryOpen();
         }
@@ -309,16 +386,11 @@ public class MergedInventory : InventoryBase {
 
         private void SlotNotified(int slotId) 
             => parent.PerformNotifySlot(slotId);
-    }
 
-    private static void SetEntityDialog(ICoreClientAPI api, BlockPos pos, GuiDialogBlockEntity dialog) {
-        if (api.World.BlockAccessor.GetBlockEntity(pos) is BlockEntityOpenableContainer container) {
-            Traverse.Create(container).Field<GuiDialogBlockEntity>("invDialog").Value = dialog;
+        private void InventoryClosed(IPlayer player) {
+            if (player == api.World.Player) {
+                parent.Remove(this);
+            }
         }
-    }
-
-    private static void SendPacket(ICoreClientAPI api, BlockPos pos, bool open) {
-        int id = (int) (open ? EnumBlockEntityPacketId.Open : EnumBlockEntityPacketId.Close);
-        api.Network.SendBlockEntityPacket(pos, id);
     }
 }
