@@ -38,6 +38,7 @@ public class Main : ModSystem {
     public bool OpenAll(KeyCombination _) {
         var player = api.World.Player;
         if (player.WorldData.CurrentGameMode == EnumGameMode.Creative) return false;
+        var reinforcement = api.ModLoader.GetModSystem<ModSystemBlockReinforcement>();
 
         float range = player.WorldData.PickingRange + 1;
         float rangesq = range * range;
@@ -54,7 +55,8 @@ public class Main : ModSystem {
         void Step(Block b, int x, int y, int z) {
             if (eyePos.SquareDistanceTo(x, y, z) > rangesq) return;
             var entity = accessor.GetBlockEntity<BlockEntityGenericTypedContainer>(new(x, y, z));
-            if (!entity?.Inventory.HasOpened(player) ?? false) {
+            bool locked = reinforcement.IsLockedForInteract(new(x, y, z), player);
+            if (!locked && (!entity?.Inventory.HasOpened(player) ?? false)) {
                 chests.Add(entity);
             }
         }
