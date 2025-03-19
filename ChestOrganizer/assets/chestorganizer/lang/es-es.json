@@ -1,0 +1,11 @@
+{
+  "_comentarios": "Chest Organizer v1.2.3 || Traducido por C4BR3R4 || Última Modificación: 20250319 || Publicación: https://c4br3r4.es/index.php?topic=1331.0 ",
+  "title"     : "Agrupación de Contenedores",
+  "close"     : "<strong>Cerrar</strong>\n\nCerrar este contenedor.",
+  "detach"    : "<strong>Desagrupar</strong>\n\nSeparar este contenedor del grupo.",
+  "sort"      : "<strong>Ordenar</strong>\n\n<font opacity='0.6'><i>Mantener 'Mayús' para ordenar por nombre.</i></font>",
+  "find"      : "<strong>Filtrar</strong>\n\nIntroduce en el campo, lo que quieres buscar.\n<font opacity='0.6'><i>Vuelve a pulsar sobre este icono para anular el filtro.</i></font>",
+  "merge"     : "<strong>Agrupar</strong>\n\n<font opacity='0.6'><i>Mantener 'Mayús' para agrupar todos los contenedores abiertos.</i></font>",
+  "detachall" : "<strong>Desagrupar Todos</strong>\n\nSeparar todos los contenedores.",
+  "openall"   : "Mod 'Chest Organizer' ► Abrir contenedores cercanos"
+}
