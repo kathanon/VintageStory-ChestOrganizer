@@ -123,9 +123,9 @@ public class Main : ModSystem {
         // so if the center of the block is just slightly out of view, it will not open it.
         var strictCheck = true;
         var room = roomSystem.GetRoomForPosition(player.Entity.Pos.AsBlockPos);
-        if (room != null && (room.ExitCount == 0 || room.SkylightCount < room.NonSkylightCount))
+        if (room is { ExitCount: 0 })
         {
-            api.Logger.Debug("Scanning room for chests");
+            api.Logger.Debug($"Scanning room for chests: {room} {room.ExitCount}");
             startPos = room.Location.Start.AsBlockPos;
             endPos = room.Location.End.AsBlockPos;
             strictCheck = false;
@@ -169,7 +169,7 @@ public class Main : ModSystem {
         stopwatch.Stop();
         api.Logger.Debug($"Open all blocks finished in {stopwatch.ElapsedMilliseconds} - Strict mode: {strictCheck}");
 
-        MergedInventory.MergeRange(chests, api);
+        if (chests.Count > 0) MergedInventory.MergeRange(chests, api);
         return true;
     }
 }
