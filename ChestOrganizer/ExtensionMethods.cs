@@ -40,8 +40,8 @@ public static class ExtensionMethods {
         => (x.ClosestInRange(rect.X, rect.Width), y.ClosestInRange(rect.Y, rect.Height));
 
     public static double ClosestInRange(this double value, double min, double length) {
-        double max = min + length;
         if (value < min) return min;
+        double max = min + length;
         if (value > max) return max;
         return value;
     }
@@ -60,7 +60,7 @@ public static class ExtensionMethods {
     }
 
     public static bool ModifierDown(this ICoreClientAPI self, Modifier modifiers) {
-        var keys = self.Input.KeyboardKeyStateRaw;
+        var keys = self.Input.KeyboardKeyState;
         bool and = IsSet(Modifier.And);
         if (Check(Modifier.Shift,   GlKeys.LShift,   GlKeys.RShift)  ) return !and;
         if (Check(Modifier.Control, GlKeys.LControl, GlKeys.RControl)) return !and;
