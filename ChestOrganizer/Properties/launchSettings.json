@@ -11,6 +11,12 @@
       "executablePath": "dotnet",
       "commandLineArgs": "\"$(VINTAGE_STORY)/VintagestoryServer.dll\" --tracelog --addModPath \"$(ProjectDir)/bin/$(Configuration)/Mods\"",
       "workingDirectory": "$(VINTAGE_STORY)"
+    },
+    "Client-Mac" : {
+      "commandName": "Executable",
+      "executablePath": "bash",
+      "commandLineArgs": "$(ProjectDir)/scripts/runClient.sh $(VINTAGE_STORY) $(ProjectDir) $(Configuration)",
+      "workingDirectory": "$(VINTAGE_STORY)"
     }
   }
 }
